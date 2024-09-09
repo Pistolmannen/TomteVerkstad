@@ -2,6 +2,7 @@ drop database TomteVerkstad;
 create database TomteVerkstad;
 use TomteVerkstad;
 
+/*  merga in mellannisse i tometenisse  */
 create table Tomtenisse(
 	Namn varchar(20) not null,
 	IdNr char(23) not null unique,
@@ -53,36 +54,59 @@ create table Adress(
 
 create table Verktyg(
 	Namn varchar(20) not null,
-	IdNr int not null unique,
-    Beskrivning varchar(60),
+	IdNr char(8) not null unique,
     Pris int not null,
     Magistatus int not null,
-    check (Magistatus rlike '[0-11]'),
 	primary key(Namn, IdNr)
+)engine=innodb;
+
+  /*     en vertikal split på verktyg    */
+create table TrasigaVerktyg(
+	Namn varchar(20) not null,
+	IdNr char(8) not null unique,
+    Pris int not null,
+    Magistatus int not null,
+	primary key(Namn, IdNr)
+)engine=innodb;
+
+/*   en horisonta split på vertyg/trasiga verktyg för att få ut beskrivning   */
+create table VerktygBeskrivning(
+	Namn varchar(20) not null,
+	IdNr char(8) not null unique,
+    Beskrivning varchar(60),
+    primary key(Namn, IdNr)
 )engine=innodb;
 
 create table AnvändsAv(
 	TNamn varchar(20) not null,
 	TIdNr char(23) not null,
     VNamn varchar(20) not null,
-	VIdNr int not null,
+	VIdNr char(8) not null,
     primary key(TNamn, TIdNr, VNamn, VIdNr),
     foreign key(TNamn, TIdNr) references Byggare(TNamn, TIdNr),
     foreign key(VNamn, VIdNr) references Verktyg(Namn, IdNr)
 )engine=innodb;
 
 create table Leksak(
-	Namn varchar(20) not null unique,
-	IdNr int not null unique,
+	NamnKod varchar(20) not null,
+	IdNr char(8) not null unique,
     Vikt int not null,
     Pris int not null,
-    primary key(IdNr)
+    primary key(IdNr),
+    foreign key(NamnKod) references LeksakNamn(NamnKod) 
+)engine=innodb;
+
+/*   en code variant på leksak    */
+create table LeksakNamn(
+	Namn varchar(20) not null,
+	NamnKod char(8) not null unique,
+    primary key(NamnKod)
 )engine=innodb;
 
 create table Bygger(
 	TNamn varchar(20) not null,
 	TIdNr char(23) not null,
-	LIdNr int not null,
+	LIdNr char(8) not null,
     primary key(TNamn, TIdNr, LIdNr),
     foreign key(TNamn, TIdNr) references Byggare(TNamn, TIdNr),
     foreign key(LIdNr) references Leksak(IdNr)
@@ -90,8 +114,8 @@ create table Bygger(
 
 create table Behöver(
 	VNamn varchar(20) not null,
-	VIdNr int not null,
-	LIdNr int not null,
+	VIdNr char(8) not null,
+	LIdNr char(8) not null,
     primary key(VNamn, VIdNr, LIdNr),
     foreign key(VNamn, VIdNr) references Verktyg(Namn, IdNr),
     foreign key(LIdNr) references Leksak(IdNr)
@@ -106,10 +130,24 @@ insert into ChefAv(TNamn, TIdNr, CNamn, CIdNr) value("Robert", "890135-0822-2-81
 
 insert into Arbetslag(T1Namn, T1IdNr, T2Namn, T2IdNr, Lnummer) value("Robert", "890135-0822-2-819288236", "Kevin", "555072-0318-3-934210345", 556); 
 
-insert into Verktyg(Namn, IdNr, Beskrivning, Pris, Magistatus) value("Hammare", 13, "du kan så väldigt hårt", 120, 13);
+insert into Byggare(TNamn, TIdNr, Klädfärg) value("Robert", "890135-0822-2-819288236", "blå"); 
 
+insert into Verktyg(Namn, IdNr, Beskrivning, Pris, Magistatus) value("Hammare", 13, "du kan slå väldigt hårt", 120, 13);
+
+insert into AnvändsAv(TNamn, TIdNr, VNamn, VIdNr) value("Robert", "890135-0822-2-819288236", "Hammare", 13);
+
+insert into Leksak(Namn, IdNr, vikt, Pris) value("T-rex", 09234, 5, 120);
+
+insert into Bygger(TNamn, TIdNr, LIdNr) value("Robert", "890135-0822-2-819288236", 09234);
+
+insert into Behöver(VNamn, VIdNr, LIdNr) value("Hammare", 13, 09234);
 
 select * from Tomtenisse; 
 select * from ChefAv; 
 select * from Arbetslag; 
+select * from Byggare; 
 select * from Verktyg; 
+select * from AnvändsAv; 
+select * from Leksak; 
+select * from Bygger;
+select * from Behöver;
