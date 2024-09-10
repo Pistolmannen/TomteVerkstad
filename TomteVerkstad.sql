@@ -63,7 +63,7 @@ create table Adress(
     foreign key(TNamn, TIdNr) references Tomtenisse(Namn, IdNr)
 )engine=innodb;
 
-create table Verktyg(
+create table MagiskaVerktyg(
 	Namn varchar(20) not null,
 	IdNr char(8) not null unique,
     Pris int not null,
@@ -72,7 +72,7 @@ create table Verktyg(
 )engine=innodb;
 
   /*     en vertikal split på verktyg    */
-create table TrasigaVerktyg(
+create table IkeMagiskaVerktyg(
 	Namn varchar(20) not null,
 	IdNr char(8) not null unique,
     Pris int not null,
@@ -94,8 +94,7 @@ create table AnvändsAv(
     VNamn varchar(20) not null,
 	VIdNr char(8) not null,
     primary key(TNamn, TIdNr, VNamn, VIdNr),
-    foreign key(TNamn, TIdNr) references Byggare(TNamn, TIdNr),
-    foreign key(VNamn, VIdNr) references Verktyg(Namn, IdNr)
+    foreign key(TNamn, TIdNr) references Byggare(TNamn, TIdNr)
 )engine=innodb;
 
 /*   en code variant på leksak    */
@@ -128,7 +127,6 @@ create table Behöver(
 	VIdNr char(8) not null,
 	LIdNr char(8) not null,
     primary key(VNamn, VIdNr, LIdNr),
-    foreign key(VNamn, VIdNr) references Verktyg(Namn, IdNr),
     foreign key(LIdNr) references Leksak(IdNr)
 )engine=innodb;
 
@@ -143,31 +141,53 @@ insert into Arbetslag(T1Namn, T1IdNr, T2Namn, T2IdNr, Lnummer) value("Robert", "
 
 insert into Byggare(TNamn, TIdNr, Klädfärg) value("Robert", "890135-0822-2-819288236", "blå"); 
 
-insert into Verktyg(Namn, IdNr, Pris, Magistatus) value("Hammare", 13, 120, 13);
-insert into TrasigaVerktyg(Namn, IdNr, Pris, Magistatus) values("sax", 36, 5, 0); 
+insert into MagiskaVerktyg(Namn, IdNr, Pris, Magistatus) value("Hammare", 13, 120, 13);
+insert into IkeMagiskaVerktyg(Namn, IdNr, Pris, Magistatus) values("sax", 36, 5, 0); 
 
 insert into VerktygBeskrivning(Namn, IdNr, Beskrivning) value("Hammare", 13, "du kan slå väldigt hårt");
-insert into VerktygBeskrivning(Namn, IdNr, Beskrivning) value("sax", 36, "har gåt i två");
+insert into VerktygBeskrivning(Namn, IdNr, Beskrivning) value("Sax", 36, "har gåt i två");
 
 insert into AnvändsAv(TNamn, TIdNr, VNamn, VIdNr) value("Robert", "890135-0822-2-819288236", "Hammare", 13);
 
 insert into LeksakNamn(Namn, NamnKod) value("T-rex", 245);
 
-insert into Leksak(NamnKod, IdNr, vikt, Pris) value(245, 09234, 5, 120);
+insert into Leksak(NamnKod, IdNr, vikt, Pris) value(245, 19234, 5, 120);
+insert into Leksak(NamnKod, IdNr, vikt, Pris) value(245, 73204, 7, 160);
+insert into Leksak(NamnKod, IdNr, vikt, Pris) value(245, 45104, 3, 100);
 
-insert into Bygger(TNamn, TIdNr, LIdNr) value("Robert", "890135-0822-2-819288236", 09234);
+insert into Bygger(TNamn, TIdNr, LIdNr) value("Robert", "890135-0822-2-819288236", 19234);
 
-insert into Behöver(VNamn, VIdNr, LIdNr) value("Hammare", 13, 09234);
+insert into Behöver(VNamn, VIdNr, LIdNr) value("Hammare", 13, 19234);
+insert into Behöver(VNamn, VIdNr, LIdNr) value("Sax", 36, 73204);
+insert into Behöver(VNamn, VIdNr, LIdNr) value("Hammare", 13, 45104);
+insert into Behöver(VNamn, VIdNr, LIdNr) value("Sax", 36, 45104);
+
+/*  simplifikations vy för att kunna visa alla verktyg  */
+create view allaVerktyg as 
+select * from MagiskaVerktyg union 
+select * from IkeMagiskaVerktyg;
+
+/*  simplifikations vy för att kunna se vilka som är mellan nissar  */
+create view Mellanisse as
+select * from Tomtenisse where Skostorlek is not NULL;
+
+/*  specialist vy för att kunna hitta vilka leksaker som kräver magi för att skapas  */
+create view KräverMagi as
+select  Leksak.NamnKod, Leksak.IdNr from Leksak, Behöver, allaVerktyg 
+where Leksak.IdNr = Behöver.LIdNr and allaVerktyg.Namn = Behöver.VNamn and allaVerktyg.IdNr = Behöver.VIdNr and allaVerktyg.Magistatus != 0;
 
 select * from Tomtenisse; 
+select * from Mellanisse;		/* deta är en vy */
 select * from ChefAv; 
 select * from Arbetslag; 
 select * from Byggare; 
-select * from Verktyg; 
-select * from TrasigaVerktyg; 
+select * from MagiskaVerktyg; 
+select * from IkeMagiskaVerktyg; 
+select * from allaVerktyg; 		/* deta är en vy */
 select * from VerktygBeskrivning; 
 select * from AnvändsAv; 
 select * from Leksak; 
 select * from LeksakNamn; 
 select * from Bygger;
 select * from Behöver;
+select * from KräverMagi;		/* deta är en vy */
