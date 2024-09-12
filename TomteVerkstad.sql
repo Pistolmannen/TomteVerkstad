@@ -191,3 +191,63 @@ select * from LeksakNamn;
 select * from Bygger;
 select * from Behöver;
 select * from KräverMagi;		/* deta är en vy */
+
+/*    en procedur som bara hämtar alla nissar     */
+delimiter //
+
+create procedure getNissar()
+begin
+	select * from Tomtenisse;
+
+end//
+
+delimiter ;
+
+call getNissar();
+
+/*    proceduren använder en IN parameter för att hämta leksaker beroende på pris    */
+delimiter //
+
+create procedure getLeksakerPåPris(in checkPris int)
+begin
+	select * from Leksak where Leksak.Pris < checkPris;
+
+end//
+
+delimiter ;
+
+call getLeksakerPåPris(140);
+
+/*    proceduren använder en IN parameter för att hämta leksaker beroende på pris och priset får inte vara mindre en 0   */
+delimiter //
+
+create procedure görVerktygMagisk(in verktygID char(8), in maginivå int)
+begin
+	if (checkPris < 0) then
+		signal sqlstate '45000' set message_text = "The pris has to be above 0";
+	else
+		select * from Leksak where Leksak.Pris < checkPris;
+	end if;
+end//
+
+delimiter ;
+
+call getLeksakerPåPris(-10);
+
+drop procedure getLeksakerPåPris;
+
+/*    proceduren använder en IN parameter för att hämta leksaker beroende på pris och priset får inte vara mindre en 0   */
+delimiter //
+
+create procedure getLeksakerPåPris(in checkPris int)
+begin
+	if (checkPris < 0) then
+		signal sqlstate '45000' set message_text = "The pris has to be above 0";
+	else
+		select * from Leksak where Leksak.Pris < checkPris;
+	end if;
+end//
+
+delimiter ;
+
+call getLeksakerPåPris(-10);
