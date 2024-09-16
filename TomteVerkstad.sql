@@ -141,11 +141,13 @@ insert into Arbetslag(T1Namn, T1IdNr, T2Namn, T2IdNr, Lnummer) value("Robert", "
 
 insert into Byggare(TNamn, TIdNr, Klädfärg) value("Robert", "890135-0822-2-819288236", "blå"); 
 
-insert into MagiskaVerktyg(Namn, IdNr, Pris, Magistatus) value("Hammare", 13, 120, 13);
-insert into IkeMagiskaVerktyg(Namn, IdNr, Pris, Magistatus) values("sax", 36, 5, 0); 
+insert into MagiskaVerktyg(Namn, IdNr, Pris, Magistatus) value("Hammare", 13, 120, 11);
+insert into IkeMagiskaVerktyg(Namn, IdNr, Pris, Magistatus) values("Sax", 36, 5, 0); 
+insert into IkeMagiskaVerktyg(Namn, IdNr, Pris, Magistatus) values("Nål", 17, 10, 0); 
 
 insert into VerktygBeskrivning(Namn, IdNr, Beskrivning) value("Hammare", 13, "du kan slå väldigt hårt");
 insert into VerktygBeskrivning(Namn, IdNr, Beskrivning) value("Sax", 36, "har gåt i två");
+insert into VerktygBeskrivning(Namn, IdNr, Beskrivning) value("Nål", 17, "bra för dockor");
 
 insert into AnvändsAv(TNamn, TIdNr, VNamn, VIdNr) value("Robert", "890135-0822-2-819288236", "Hammare", 13);
 
@@ -221,18 +223,25 @@ call getLeksakerPåPris(140);
 /*    proceduren använder en IN parameter för att hämta leksaker beroende på pris och priset får inte vara mindre en 0   */
 delimiter //
 
-create procedure görVerktygMagisk(in verktygID char(8), in maginivå int)
+create procedure görVerktygMagisk(in verktygNamn varchar(20), in verktygID char(8), in inMagistatus int)
 begin
-	if (checkPris < 0) then
-		signal sqlstate '45000' set message_text = "The pris has to be above 0";
+	if (inMagistatus < 0) then
+		signal sqlstate '45000' set message_text = "Maginivån måste vara mer än 0";
 	else
-		select * from Leksak where Leksak.Pris < checkPris;
+		insert into MagiskaVerktyg(Namn, IdNr, Pris, Magistatus) 
+		select Namn, IdNr, Pris, Magistatus from IkeMagiskaVerktyg where Namn = verktygNamn and IdNr = verktygID;
+        
+        update MagiskaVerktyg set Magistatus = inMagistatus where verktygNamn = Namn and verktygID = IdNr;
+        
+        delete from IkeMagiskaVerktyg where verktygNamn = Namn and verktygID = IdNr;
 	end if;
 end//
 
 delimiter ;
 
-call getLeksakerPåPris(-10);
+call görVerktygMagisk("Nål", 17, 5);
+
+select * from MagiskaVerktyg; 
 
 drop procedure getLeksakerPåPris;
 
@@ -242,7 +251,7 @@ delimiter //
 create procedure getLeksakerPåPris(in checkPris int)
 begin
 	if (checkPris < 0) then
-		signal sqlstate '45000' set message_text = "The pris has to be above 0";
+		signal sqlstate '45000' set message_text = "priset måste vara 0 eller mer";
 	else
 		select * from Leksak where Leksak.Pris < checkPris;
 	end if;
