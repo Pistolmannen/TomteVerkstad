@@ -67,7 +67,7 @@ create table MagiskaVerktyg(
 	Namn varchar(20) not null,
 	IdNr char(8) not null unique,
     Pris int not null,
-    Magistatus int not null,
+    Magistatus int,
 	primary key(Namn, IdNr)
 )engine=innodb;
 
@@ -76,7 +76,6 @@ create table IkeMagiskaVerktyg(
 	Namn varchar(20) not null,
 	IdNr char(8) not null unique,
     Pris int not null,
-    Magistatus int not null,
 	primary key(Namn, IdNr)
 )engine=innodb;
 
@@ -142,8 +141,8 @@ insert into Arbetslag(T1Namn, T1IdNr, T2Namn, T2IdNr, Lnummer) value("Robert", "
 insert into Byggare(TNamn, TIdNr, Klädfärg) value("Robert", "890135-0822-2-819288236", "blå"); 
 
 insert into MagiskaVerktyg(Namn, IdNr, Pris, Magistatus) value("Hammare", 13, 120, 11);
-insert into IkeMagiskaVerktyg(Namn, IdNr, Pris, Magistatus) values("Sax", 36, 5, 0); 
-insert into IkeMagiskaVerktyg(Namn, IdNr, Pris, Magistatus) values("Nål", 17, 10, 0); 
+insert into IkeMagiskaVerktyg(Namn, IdNr, Pris) values("Sax", 36, 5); 
+insert into IkeMagiskaVerktyg(Namn, IdNr, Pris) values("Nål", 17, 10); 
 
 insert into VerktygBeskrivning(Namn, IdNr, Beskrivning) value("Hammare", 13, "du kan slå väldigt hårt");
 insert into VerktygBeskrivning(Namn, IdNr, Beskrivning) value("Sax", 36, "har gåt i två");
@@ -166,8 +165,8 @@ insert into Behöver(VNamn, VIdNr, LIdNr) value("Sax", 36, 45104);
 
 /*  simplifikations vy för att kunna visa alla verktyg  */
 create view allaVerktyg as 
-select * from MagiskaVerktyg union 
-select * from IkeMagiskaVerktyg;
+select Namn, IdNr, Pris, Magistatus from MagiskaVerktyg union 
+select Namn, IdNr, Pris, Null as "Magistatus" from IkeMagiskaVerktyg;
 
 /*  simplifikations vy för att kunna se vilka som är mellan nissar  */
 create view Mellanisse as
@@ -176,7 +175,7 @@ select * from Tomtenisse where Skostorlek is not NULL;
 /*  specialist vy för att kunna hitta vilka leksaker som kräver magi för att skapas  */
 create view KräverMagi as
 select  Leksak.NamnKod, Leksak.IdNr from Leksak, Behöver, allaVerktyg 
-where Leksak.IdNr = Behöver.LIdNr and allaVerktyg.Namn = Behöver.VNamn and allaVerktyg.IdNr = Behöver.VIdNr and allaVerktyg.Magistatus != 0;
+where Leksak.IdNr = Behöver.LIdNr and allaVerktyg.Namn = Behöver.VNamn and allaVerktyg.IdNr = Behöver.VIdNr and allaVerktyg.Magistatus is not null;
 
 select * from Tomtenisse; 
 select * from Mellanisse;		/* deta är en vy */
@@ -229,7 +228,7 @@ begin
 		signal sqlstate '45000' set message_text = "Maginivån måste vara mer än 0";
 	else
 		insert into MagiskaVerktyg(Namn, IdNr, Pris, Magistatus) 
-		select Namn, IdNr, Pris, Magistatus from IkeMagiskaVerktyg where Namn = verktygNamn and IdNr = verktygID;
+		select Namn, IdNr, Pris, Null as "Magistatus" from IkeMagiskaVerktyg where Namn = verktygNamn and IdNr = verktygID;
         
         update MagiskaVerktyg set Magistatus = inMagistatus where verktygNamn = Namn and verktygID = IdNr;
         
@@ -242,6 +241,7 @@ delimiter ;
 call görVerktygMagisk("Nål", 17, 5);
 
 select * from MagiskaVerktyg; 
+select * from IkeMagiskaVerktyg; 
 
 drop procedure getLeksakerPåPris;
 
