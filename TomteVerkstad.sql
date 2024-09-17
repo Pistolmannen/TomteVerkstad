@@ -96,6 +96,17 @@ create table AnvändsAv(
     foreign key(TNamn, TIdNr) references Byggare(TNamn, TIdNr)
 )engine=innodb;
 
+create table AnvändsAvLog(
+	Händelse varchar(32) not null,
+	TNamn varchar(20) not null,
+	TIdNr char(23) not null,
+    VNamn varchar(20) not null,
+	VIdNr char(8) not null,
+    Tid datetime not null,
+    primary key(TNamn, TIdNr, VNamn, VIdNr),
+    foreign key(TNamn, TIdNr) references Byggare(TNamn, TIdNr)
+)engine=innodb;
+
 /*   en code variant på leksak    */
 create table LeksakNamn(
 	Namn varchar(20) not null,
@@ -128,6 +139,26 @@ create table Behöver(
     primary key(VNamn, VIdNr, LIdNr),
     foreign key(LIdNr) references Leksak(IdNr)
 )engine=innodb;
+
+delimiter //
+
+create trigger SlutaAnvända after delete on AnvändsAv
+for each row begin
+	insert into AnvändsAvLog(Händelse, TNamn, TIdNr, VNamn, VIdNr, Tid) 
+    value("Sluta använda", OLD.TNamn, OLD.TIdNr, OLD.VNamn, OLD.VIdNr, now());
+end//
+
+delimiter ;
+
+delimiter //
+
+create trigger BörjaAnvända after insert on AnvändsAv
+for each row begin
+	insert into AnvändsAvLog(Händelse, TNamn, TIdNr, VNamn, VIdNr, Tid) 
+    select "Börja använda", TNamn, TIdNr, VNamn, VIdNr, now() from NEW;
+end//
+
+delimiter ;
 
 insert into Tomtenisse(Namn, IdNr, Nötter, Russin) value("Kevin", "555072-0318-3-934210345", 10, 20); 
 insert into Tomtenisse(Namn, IdNr, Nötter, Russin, Skostorlek) value("David", "623072-1210-6-025610341", 15, 30, "medium"); 
@@ -187,6 +218,9 @@ select * from IkeMagiskaVerktyg;
 select * from allaVerktyg; 		/* deta är en vy */
 select * from VerktygBeskrivning; 
 select * from AnvändsAv; 
+
+delete from AnvändsAv where TNamn = "Robert" and TIdNr = "890135-0822-2-819288236" and VNamn = "Hammare" and VIdNr = 13;
+select * from AnvändsAvLog;
 select * from Leksak; 
 select * from LeksakNamn; 
 select * from Bygger;
@@ -219,13 +253,13 @@ delimiter ;
 
 call getLeksakerPåPris(140);
 
-/*    proceduren använder en IN parameter för att hämta leksaker beroende på pris och priset får inte vara mindre en 0   */
+/*    proceduren används för att flyta tuplar från ikemagiska till magiska verktyg   */
 delimiter //
 
 create procedure görVerktygMagisk(in verktygNamn varchar(20), in verktygID char(8), in inMagistatus int)
 begin
-	if (inMagistatus < 0) then
-		signal sqlstate '45000' set message_text = "Maginivån måste vara mer än 0";
+	if (inMagistatus <= 0 or inMagistatus >= 12) then
+		signal sqlstate '45000' set message_text = "Maginivån måste vara mellan 1 och 11";
 	else
 		insert into MagiskaVerktyg(Namn, IdNr, Pris, Magistatus) 
 		select Namn, IdNr, Pris, Null as "Magistatus" from IkeMagiskaVerktyg where Namn = verktygNamn and IdNr = verktygID;
