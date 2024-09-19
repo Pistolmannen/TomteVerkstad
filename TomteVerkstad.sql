@@ -229,7 +229,7 @@ insert into VerktygBeskrivning(Namn, IdNr, Beskrivning) value("Nål", 17, "bra f
 
 insert into AnvändsAv(TNamn, TIdNr, VNamn, VIdNr) value("Robert", "890135-0822-2-819288236", "Hammare", 13);
 /*  insert into AnvändsAv(TNamn, TIdNr, VNamn, VIdNr) value("Robert", "890135-0822-2-819288236", "Såg", 29); 
-	används för att testa verktyg triger */  
+	Används för att testa verktyg trigger */  
 
 insert into LeksakNamn(Namn, NamnKod) value("T-rex", 245);
 
@@ -303,7 +303,7 @@ delimiter //
 
 create procedure getLeksakerPåPris(in checkPris int)
 begin
-	select * from Leksak where Leksak.Pris < checkPris;
+	select * from Leksak where Leksak.Pris <= checkPris;
 
 end//
 
@@ -345,10 +345,26 @@ begin
 	if (checkPris < 0) then
 		signal sqlstate '45000' set message_text = "priset måste vara 0 eller mer";
 	else
-		select * from Leksak where Leksak.Pris < checkPris;
+		select * from Leksak where Leksak.Pris <= checkPris;
 	end if;
 end//
 
 delimiter ;
 
 call getLeksakerPåPris(-10);
+
+/*  create user "a23eriguByggarNisse"@"%" identified by "ByggaBil";  */ /*   skapade användaren */
+
+/* grant select, delete, insert on TomteVerkstad.AnvändsAv to "a23eriguByggarNisse"@"%"; 
+grant select, delete, insert on TomteVerkstad.Bygger to "a23eriguByggarNisse"@"%";
+grant select on TomteVerkstad.AnvändsAvLog to "a23eriguByggarNisse"@"%";
+grant select on TomteVerkstad.MagiskaVerktyg to "a23eriguByggarNisse"@"%";
+grant select on TomteVerkstad.IkeMagiskaVerktyg to "a23eriguByggarNisse"@"%";
+grant select on TomteVerkstad.allaVerktyg to "a23eriguByggarNisse"@"%";
+grant select on TomteVerkstad.Behöver to "a23eriguByggarNisse"@"%";
+grant select on TomteVerkstad.KräverMagi to "a23eriguByggarNisse"@"%";
+grant select on TomteVerkstad.Leksak to "a23eriguByggarNisse"@"%";
+grant select on TomteVerkstad.LeksakNamn to "a23eriguByggarNisse"@"%";
+grant select on TomteVerkstad.LeksakNamnLog to "a23eriguByggarNisse"@"%";
+grant select on TomteVerkstad.Tomtenisse to "a23eriguByggarNisse"@"%";
+grant execute on procedure TomteVerkstad.getLeksakerPåPris to "a23eriguByggarNisse"@"%"; */
