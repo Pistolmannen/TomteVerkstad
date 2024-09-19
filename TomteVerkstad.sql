@@ -79,6 +79,16 @@ create table IkeMagiskaVerktyg(
 	primary key(Namn, IdNr)
 )engine=innodb;
 
+create table VerktygLog(
+	Händelse varchar(20) not null,
+	Namn varchar(20) not null,
+	IdNr char(8) not null unique,
+    Pris int not null,
+    Magistatus int,
+    Tid datetime not null,
+	primary key(Namn, IdNr, Tid)
+)engine=innodb;
+
 /*   en horisonta split på vertyg/trasiga verktyg för att få ut beskrivning   */
 create table VerktygBeskrivning(
 	Namn varchar(20) not null,
@@ -103,7 +113,7 @@ create table AnvändsAvLog(
     VNamn varchar(20) not null,
 	VIdNr char(8) not null,
     Tid datetime not null,
-    primary key(TNamn, TIdNr, VNamn, VIdNr),
+    primary key(TNamn, TIdNr, VNamn, VIdNr, Tid),
     foreign key(TNamn, TIdNr) references Byggare(TNamn, TIdNr)
 )engine=innodb;
 
@@ -155,7 +165,20 @@ delimiter //
 create trigger BörjaAnvända after insert on AnvändsAv
 for each row begin
 	insert into AnvändsAvLog(Händelse, TNamn, TIdNr, VNamn, VIdNr, Tid) 
-    select "Börja använda", TNamn, TIdNr, VNamn, VIdNr, now() from NEW;
+    value("Börja använda", NEW.TNamn, NEW.TIdNr, NEW.VNamn, NEW.VIdNr, now());
+end//
+
+delimiter ;
+
+delimiter //
+
+create trigger SäljVerktyg after delete on MagiskaVerktyg 
+for each row begin
+	insert into VerktygLog(Händelse, Namn, IdNr, Pris, Magistatus, Tid) 
+    value("såldes", old.Namn, old.IdNr, old.pris, old.magistatus, now());
+	delete from VerktygBeskrivning where Namn = old.Namn and IdNr = old.IdNr;
+	delete from AnvändsAv where VNamn = old.Namn and VIdNr = old.IdNr;
+    delete from Behöver where VNamn = old.Namn and VIdNr = old.IdNr;
 end//
 
 delimiter ;
@@ -172,10 +195,12 @@ insert into Arbetslag(T1Namn, T1IdNr, T2Namn, T2IdNr, Lnummer) value("Robert", "
 insert into Byggare(TNamn, TIdNr, Klädfärg) value("Robert", "890135-0822-2-819288236", "blå"); 
 
 insert into MagiskaVerktyg(Namn, IdNr, Pris, Magistatus) value("Hammare", 13, 120, 11);
+insert into MagiskaVerktyg(Namn, IdNr, Pris, Magistatus) value("Såg", 29, 200, 6);
 insert into IkeMagiskaVerktyg(Namn, IdNr, Pris) values("Sax", 36, 5); 
 insert into IkeMagiskaVerktyg(Namn, IdNr, Pris) values("Nål", 17, 10); 
 
 insert into VerktygBeskrivning(Namn, IdNr, Beskrivning) value("Hammare", 13, "du kan slå väldigt hårt");
+insert into VerktygBeskrivning(Namn, IdNr, Beskrivning) value("Såg", 29, "sågar alltid rakt");
 insert into VerktygBeskrivning(Namn, IdNr, Beskrivning) value("Sax", 36, "har gåt i två");
 insert into VerktygBeskrivning(Namn, IdNr, Beskrivning) value("Nål", 17, "bra för dockor");
 
@@ -190,6 +215,7 @@ insert into Leksak(NamnKod, IdNr, vikt, Pris) value(245, 45104, 3, 100);
 insert into Bygger(TNamn, TIdNr, LIdNr) value("Robert", "890135-0822-2-819288236", 19234);
 
 insert into Behöver(VNamn, VIdNr, LIdNr) value("Hammare", 13, 19234);
+insert into Behöver(VNamn, VIdNr, LIdNr) value("Såg", 29, 19234);
 insert into Behöver(VNamn, VIdNr, LIdNr) value("Sax", 36, 73204);
 insert into Behöver(VNamn, VIdNr, LIdNr) value("Hammare", 13, 45104);
 insert into Behöver(VNamn, VIdNr, LIdNr) value("Sax", 36, 45104);
@@ -214,9 +240,12 @@ select * from ChefAv;
 select * from Arbetslag; 
 select * from Byggare; 
 select * from MagiskaVerktyg; 
+
+delete from MagiskaVerktyg where Namn = "Såg" and IdNr = "29";
 select * from IkeMagiskaVerktyg; 
 select * from allaVerktyg; 		/* deta är en vy */
 select * from VerktygBeskrivning; 
+select * from VerktygLog;
 select * from AnvändsAv; 
 
 delete from AnvändsAv where TNamn = "Robert" and TIdNr = "890135-0822-2-819288236" and VNamn = "Hammare" and VIdNr = 13;
