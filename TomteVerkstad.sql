@@ -67,7 +67,7 @@ create table MagiskaVerktyg(
 	Namn varchar(20) not null,
 	IdNr char(8) not null unique,
     Pris int not null,
-    Magistatus int,
+    Magistatus int not null,
 	primary key(Namn, IdNr)
 )engine=innodb;
 
@@ -93,7 +93,7 @@ create table VerktygLog(
 create table VerktygBeskrivning(
 	Namn varchar(20) not null,
 	IdNr char(8) not null unique,
-    Beskrivning varchar(60),
+    Beskrivning varchar(60) not null,
     primary key(Namn, IdNr)
 )engine=innodb;
 
