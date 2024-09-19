@@ -124,13 +124,20 @@ create table LeksakNamn(
     primary key(NamnKod)
 )engine=innodb;
 
+create table LeksakNamnLog(
+	Händelse varchar(20) not null,
+	Namn varchar(20) not null,
+	NamnKod char(8) not null unique,
+    Tid datetime not null, 
+    primary key(NamnKod, Tid)
+)engine=innodb;
+
 create table Leksak(
 	NamnKod char(8) not null,
 	IdNr char(8) not null unique,
     Vikt int not null,
     Pris int not null,
-    primary key(IdNr),
-    foreign key(NamnKod) references LeksakNamn(NamnKod) 
+    primary key(IdNr)
 )engine=innodb;
 
 create table Bygger(
@@ -151,7 +158,7 @@ create table Behöver(
 )engine=innodb;
 
 delimiter //
-
+/*  triger för att loga när verktyg slutar användas */
 create trigger SlutaAnvända after delete on AnvändsAv
 for each row begin
 	insert into AnvändsAvLog(Händelse, TNamn, TIdNr, VNamn, VIdNr, Tid) 
@@ -161,7 +168,7 @@ end//
 delimiter ;
 
 delimiter //
-
+/*  triger för att loga när verktyg börjar användas */
 create trigger BörjaAnvända after insert on AnvändsAv
 for each row begin
 	insert into AnvändsAvLog(Händelse, TNamn, TIdNr, VNamn, VIdNr, Tid) 
@@ -171,17 +178,33 @@ end//
 delimiter ;
 
 delimiter //
-
-create trigger SäljVerktyg after delete on MagiskaVerktyg 
+/*  triger för att loga när nya leksaks namn lägs till och fixa namnkoder i leksaker */
+create trigger LägTillNamnKod after insert on LeksakNamn
 for each row begin
-	insert into VerktygLog(Händelse, Namn, IdNr, Pris, Magistatus, Tid) 
-    value("såldes", old.Namn, old.IdNr, old.pris, old.magistatus, now());
-	delete from VerktygBeskrivning where Namn = old.Namn and IdNr = old.IdNr;
-	delete from AnvändsAv where VNamn = old.Namn and VIdNr = old.IdNr;
-    delete from Behöver where VNamn = old.Namn and VIdNr = old.IdNr;
+	insert into LeksakNamnLog(Händelse, Namn, NamnKod, Tid) 
+    value("Lagt till", new.Namn, new.NamnKod, now());
+	update Leksak set NamnKod = new.NamnKod where NamnKod = new.Namn;
 end//
 
 delimiter ;
+
+delimiter //
+/*  triger för att kolla om verktyg kan tas bort och logar om det går */
+create trigger SäljVerktyg after delete on MagiskaVerktyg 
+for each row begin
+    
+    if ((select count(*) from AnvändsAv where VNamn = old.Namn and VIdNr = old.IdNr) > 0) then
+		signal sqlstate '45000' set message_text = "Deta verktyg används av någon";
+	else
+		insert into VerktygLog(Händelse, Namn, IdNr, Pris, Magistatus, Tid) 
+		value("såldes", old.Namn, old.IdNr, old.pris, old.magistatus, now());
+		delete from VerktygBeskrivning where Namn = old.Namn and IdNr = old.IdNr;
+		delete from Behöver where VNamn = old.Namn and VIdNr = old.IdNr;
+	end if;
+end//
+
+delimiter ;
+
 
 insert into Tomtenisse(Namn, IdNr, Nötter, Russin) value("Kevin", "555072-0318-3-934210345", 10, 20); 
 insert into Tomtenisse(Namn, IdNr, Nötter, Russin, Skostorlek) value("David", "623072-1210-6-025610341", 15, 30, "medium"); 
@@ -205,12 +228,15 @@ insert into VerktygBeskrivning(Namn, IdNr, Beskrivning) value("Sax", 36, "har g�
 insert into VerktygBeskrivning(Namn, IdNr, Beskrivning) value("Nål", 17, "bra för dockor");
 
 insert into AnvändsAv(TNamn, TIdNr, VNamn, VIdNr) value("Robert", "890135-0822-2-819288236", "Hammare", 13);
+/*  insert into AnvändsAv(TNamn, TIdNr, VNamn, VIdNr) value("Robert", "890135-0822-2-819288236", "Såg", 29); 
+	används för att testa verktyg triger */  
 
 insert into LeksakNamn(Namn, NamnKod) value("T-rex", 245);
 
 insert into Leksak(NamnKod, IdNr, vikt, Pris) value(245, 19234, 5, 120);
 insert into Leksak(NamnKod, IdNr, vikt, Pris) value(245, 73204, 7, 160);
 insert into Leksak(NamnKod, IdNr, vikt, Pris) value(245, 45104, 3, 100);
+insert into Leksak(NamnKod, IdNr, vikt, Pris) value("Björn", 98201, 3, 100);
 
 insert into Bygger(TNamn, TIdNr, LIdNr) value("Robert", "890135-0822-2-819288236", 19234);
 
@@ -250,8 +276,11 @@ select * from AnvändsAv;
 
 delete from AnvändsAv where TNamn = "Robert" and TIdNr = "890135-0822-2-819288236" and VNamn = "Hammare" and VIdNr = 13;
 select * from AnvändsAvLog;
-select * from Leksak; 
 select * from LeksakNamn; 
+
+insert into LeksakNamn(Namn, NamnKod) value("Björn", 193);
+select * from LeksakNamnLog; 
+select * from Leksak; 
 select * from Bygger;
 select * from Behöver;
 select * from KräverMagi;		/* deta är en vy */
