@@ -371,6 +371,7 @@ call getLeksakerPåPris(-10);
 
 /*  create user "a23eriguByggarNisse"@"%" identified by "ByggaBil";  */ /*   skapade användaren */
 
+/*   koden för alla rättigheter */
 /* grant select, delete, insert on TomteVerkstad.AnvändsAv to "a23eriguByggarNisse"@"%"; 
 grant select, delete, insert on TomteVerkstad.Bygger to "a23eriguByggarNisse"@"%";
 grant select on TomteVerkstad.AnvändsAvLog to "a23eriguByggarNisse"@"%";
@@ -385,3 +386,13 @@ grant select on TomteVerkstad.LeksakNamn to "a23eriguByggarNisse"@"%";
 grant select on TomteVerkstad.LeksakNamnLog to "a23eriguByggarNisse"@"%";
 grant execute on procedure TomteVerkstad.getLeksakerPåPris to "a23eriguByggarNisse"@"%"; 
 grant execute on procedure TomteVerkstad.getNissar to "a23eriguByggarNisse"@"%"; */
+
+/*
+use TomteVerkstad;			 koden som användes för att testa användare
+
+show tables;
+select * from allaVerktyg;
+
+show procedure status;
+call getLeksakerPåPris(160);
+*/
