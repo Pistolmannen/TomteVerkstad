@@ -67,7 +67,7 @@ create table MagiskaVerktyg(
 	Namn varchar(20) not null,
 	IdNr char(8) not null unique,
     Pris int not null,
-    Magistatus int not null,
+    Magistatus int,
 	primary key(Namn, IdNr)
 )engine=innodb;
 
@@ -158,7 +158,7 @@ create table Behöver(
 )engine=innodb;
 
 delimiter //
-/*  triger för att loga när verktyg slutar användas */
+/*  trigger för att loga när verktyg slutar användas */
 create trigger SlutaAnvända after delete on AnvändsAv
 for each row begin
 	insert into AnvändsAvLog(Händelse, TNamn, TIdNr, VNamn, VIdNr, Tid) 
@@ -168,7 +168,7 @@ end//
 delimiter ;
 
 delimiter //
-/*  triger för att loga när verktyg börjar användas */
+/*  trigger för att loga när verktyg börjar användas */
 create trigger BörjaAnvända after insert on AnvändsAv
 for each row begin
 	insert into AnvändsAvLog(Händelse, TNamn, TIdNr, VNamn, VIdNr, Tid) 
@@ -178,7 +178,7 @@ end//
 delimiter ;
 
 delimiter //
-/*  triger för att loga när nya leksaks namn lägs till och fixa namnkoder i leksaker */
+/*  trigger för att loga när nya leksaks namn lägs till och fixa namnkoder i leksaker */
 create trigger LägTillNamnKod after insert on LeksakNamn
 for each row begin
 	insert into LeksakNamnLog(Händelse, Namn, NamnKod, Tid) 
@@ -189,10 +189,9 @@ end//
 delimiter ;
 
 delimiter //
-/*  triger för att kolla om verktyg kan tas bort och logar om det går */
-create trigger SäljVerktyg after delete on MagiskaVerktyg 
+/*  trigger för att kolla om verktyg kan tas bort och logar om det går */
+create trigger SäljMagiskaVerktyg after delete on MagiskaVerktyg 
 for each row begin
-    
     if ((select count(*) from AnvändsAv where VNamn = old.Namn and VIdNr = old.IdNr) > 0) then
 		signal sqlstate '45000' set message_text = "Deta verktyg används av någon";
 	else
@@ -202,6 +201,21 @@ for each row begin
 		delete from Behöver where VNamn = old.Namn and VIdNr = old.IdNr;
 	end if;
 end//
+
+delimiter //
+/*  trigger för att kolla om verktyg kan tas bort och logar om det går */
+create trigger SäljIkeMagiskaVerktyg after delete on IkeMagiskaVerktyg 
+for each row begin
+    if ((select count(*) from AnvändsAv where VNamn = old.Namn and VIdNr = old.IdNr) > 0) then
+		signal sqlstate '45000' set message_text = "Deta verktyg används av någon";
+	else
+		insert into VerktygLog(Händelse, Namn, IdNr, Pris, Magistatus, Tid) 
+		value("såldes", old.Namn, old.IdNr, old.pris, null, now());
+		delete from VerktygBeskrivning where Namn = old.Namn and IdNr = old.IdNr;
+		delete from Behöver where VNamn = old.Namn and VIdNr = old.IdNr;
+	end if;
+end//
+
 
 delimiter ;
 
@@ -221,6 +235,7 @@ insert into MagiskaVerktyg(Namn, IdNr, Pris, Magistatus) value("Hammare", 13, 12
 insert into MagiskaVerktyg(Namn, IdNr, Pris, Magistatus) value("Såg", 29, 200, 6);
 insert into IkeMagiskaVerktyg(Namn, IdNr, Pris) values("Sax", 36, 5); 
 insert into IkeMagiskaVerktyg(Namn, IdNr, Pris) values("Nål", 17, 10); 
+insert into IkeMagiskaVerktyg(Namn, IdNr, Pris) values("Hammare", 5, 100); 
 
 insert into VerktygBeskrivning(Namn, IdNr, Beskrivning) value("Hammare", 13, "du kan slå väldigt hårt");
 insert into VerktygBeskrivning(Namn, IdNr, Beskrivning) value("Såg", 29, "sågar alltid rakt");
@@ -268,6 +283,7 @@ select * from Byggare;
 select * from MagiskaVerktyg; 
 
 delete from MagiskaVerktyg where Namn = "Såg" and IdNr = "29";
+delete from IkeMagiskaVerktyg where Namn = "Hammare" and IdNr = "5";
 select * from IkeMagiskaVerktyg; 
 select * from allaVerktyg; 		/* deta är en vy */
 select * from VerktygBeskrivning; 
@@ -360,11 +376,12 @@ grant select, delete, insert on TomteVerkstad.Bygger to "a23eriguByggarNisse"@"%
 grant select on TomteVerkstad.AnvändsAvLog to "a23eriguByggarNisse"@"%";
 grant select on TomteVerkstad.MagiskaVerktyg to "a23eriguByggarNisse"@"%";
 grant select on TomteVerkstad.IkeMagiskaVerktyg to "a23eriguByggarNisse"@"%";
-grant select on TomteVerkstad.allaVerktyg to "a23eriguByggarNisse"@"%";
+grant select on TomteVerkstad.allaVerktyg to "a23eriguByggarNisse"@"%"; 
+grant select on TomteVerkstad.VerktygLog to "a23eriguByggarNisse"@"%";
 grant select on TomteVerkstad.Behöver to "a23eriguByggarNisse"@"%";
 grant select on TomteVerkstad.KräverMagi to "a23eriguByggarNisse"@"%";
 grant select on TomteVerkstad.Leksak to "a23eriguByggarNisse"@"%";
 grant select on TomteVerkstad.LeksakNamn to "a23eriguByggarNisse"@"%";
 grant select on TomteVerkstad.LeksakNamnLog to "a23eriguByggarNisse"@"%";
-grant select on TomteVerkstad.Tomtenisse to "a23eriguByggarNisse"@"%";
-grant execute on procedure TomteVerkstad.getLeksakerPåPris to "a23eriguByggarNisse"@"%"; */
+grant execute on procedure TomteVerkstad.getLeksakerPåPris to "a23eriguByggarNisse"@"%"; 
+grant execute on procedure TomteVerkstad.getNissar to "a23eriguByggarNisse"@"%"; */
