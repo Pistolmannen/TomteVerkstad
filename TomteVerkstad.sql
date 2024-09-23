@@ -336,9 +336,7 @@ begin
 		signal sqlstate '45000' set message_text = "Maginivån måste vara mellan 1 och 11";
 	else
 		insert into MagiskaVerktyg(Namn, IdNr, Pris, Magistatus) 
-		select Namn, IdNr, Pris, Null as "Magistatus" from IckeMagiskaVerktyg where Namn = verktygNamn and IdNr = verktygID;
-        
-        update MagiskaVerktyg set Magistatus = inMagistatus where verktygNamn = Namn and verktygID = IdNr;
+		select Namn, IdNr, Pris, inMagistatus from IckeMagiskaVerktyg where Namn = verktygNamn and IdNr = verktygID;
         
         delete from IckeMagiskaVerktyg where verktygNamn = Namn and verktygID = IdNr;
 	end if;
