@@ -10,8 +10,6 @@
     <?php
     $pdo = new PDO("mysql:dbname=TomteVerkstad;host=localhost", "dbkonstruktion", "Skata#23");
 
-    $name = $_POST["name"];
-
     if (empty($_POST["name"])) {
         $name = "Name";
     } 
@@ -22,6 +20,7 @@
     ?>
 
     <form action = "TomteVerkstad.php" method = "POST">
+        Search for Tomtenissar <br>
         <input type="text" name="name" value= <?php echo $name ?>>
         <input type="submit" name="submit" value="Submit"> 
     <form>
