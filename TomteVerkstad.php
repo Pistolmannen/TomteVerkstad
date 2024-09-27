@@ -10,30 +10,30 @@
     <?php
     $pdo = new PDO("mysql:dbname=TomteVerkstad;host=localhost", "dbkonstruktion", "Skata#23");
 
-    $namn = "David";
+    $name = $_POST["name"];
 
     if (empty($_POST["name"])) {
-        $name = "David";
+        $name = "Name";
     } 
     else {
-        $name = test_input($_POST["name"]);
-        echo($name);
+        $name = $_POST["name"];
     }
 
     ?>
 
-    <input type="text" name="name" value="name">
-    <input type="submit" name="submit" value="Submit"> 
+    <form action = "TomteVerkstad.php" method = "POST">
+        <input type="text" name="name" value= <?php echo $name ?>>
+        <input type="submit" name="submit" value="Submit"> 
+    <form>
 
     <?php
     echo "<br>";
 
-    $Tomtenissar = $pdo->prepare("select * from Tomtenisse where Namn = David");
-    //$Tomtenissar = $pdo->query("select * from Tomtenisse");
-    $data = $Tomtenissar->fetchAll();
+    $Tomtenissar = $pdo->prepare("select * from Tomtenisse where Namn = ?");
+    $Tomtenissar->bindParam(1, $name, PDO::PARAM_STR);
+    $Tomtenissar->execute();
 
-
-    if ($data->countRow() > 0){
+    if (($Tomtenissar->rowCount()) > 0){
         foreach($Tomtenissar as $row) {
             echo("<pre>");
             print_r($row);
@@ -41,7 +41,8 @@
         }
     }
     else{
-        echo("no info found");
+        echo "<br>";
+        echo("No info found");
     }
         
     ?>
