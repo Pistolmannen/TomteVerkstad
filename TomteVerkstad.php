@@ -14,11 +14,15 @@
     |   koden för drop down menyn   | 
     \*-----------------------------*/
     $Dropdownissar = $pdo->prepare("CALL getNissar");
+    //$Dropdownissar = $pdo->prepare("select * from Tomtenisse");
     $Dropdownissar->execute();
+    $FetchDropdownissar = $Dropdownissar->fetchAll(PDO::FETCH_ASSOC);
+    $Dropdownissar->closeCursor();
+
     echo "<p> Name of all tomtenissar </p>";
 
     echo "<select name = 'dropdown'>";
-    foreach($Dropdownissar as $row) {
+    foreach($FetchDropdownissar as $row) {
         echo("<option>" . $row["Namn"] . "</option>");
     }
     echo "</select>";
