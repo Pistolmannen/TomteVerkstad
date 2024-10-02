@@ -13,7 +13,7 @@
     /*-----------------------------*\
     |   koden för drop down menyn   | 
     \*-----------------------------*/
-    $Dropdownissar = $pdo->prepare("select * from Tomtenisse");
+    $Dropdownissar = $pdo->prepare("CALL getNissar");
     $Dropdownissar->execute();
     echo "<p> Name of all tomtenissar </p>";
 
@@ -72,14 +72,14 @@
     ?>
 
     <form action = "TomteVerkstad.php" method = "POST">
-        Create tomtenisse <br>
+        <p> Create tomtenisse </p>
         Name of tomtenisse 
         <input type="text" name="Cname" value=""> <br>
         ID of tomtenisse 
         <input type="text" name="CId" value=""> <br>
-        amount of nuts earned 
+        Amount of nuts earned 
         <input type="number" name="Nuts" value=""> <br>
-        amount of raisin earned 
+        Amount of raisin earned 
         <input type="number" name="Raisin" value=""> <br>
         <input type="submit" name="submit" value="Submit"> 
     </form>
@@ -89,7 +89,7 @@
     echo "<br>";
 
     if (empty($_POST["Cname"]) || empty($_POST["CId"]) || empty($_POST["Nuts"]) || empty($_POST["Raisin"])) {
-        echo("can't insert when empty");
+        echo("Can't insert when empty");
     } 
     else {
         
@@ -123,14 +123,14 @@
     ?>
 
     <form action = "TomteVerkstad.php" method = "POST">
-        Make chefnisse <br>
+        <p> Make chefnisse </p>
         Name of tomtenisse 
         <input type="text" name="Chefname" value=""> <br>
         ID of tomtenisse 
         <input type="text" name="ChefId" value=""> <br>
         Shoe size <br>
-        <input type="radio" id="none" name="Shoesize" value=""> 
-        <label for="none">No</label> <br>
+        <input type="radio" id="none" name="Shoesize" value="none"> 
+        <label for="none">None</label> <br>
         <input type="radio" id="mini" name="Shoesize" value="mini">
         <label for="mini">Mini</label> <br>
         <input type="radio" id="medium" name="Shoesize" value="medium"> 
@@ -145,33 +145,42 @@
     </form>
 
     <?php
-    /*
-    if (empty($_POST["Chefname"]) || empty($_POST["ChefId"]) || empty($_POST["Shoesize"])) {
-        echo("can't update when empty");
-    } 
-    else {
-        
-        $CreateTomtenissar = $pdo->prepare("insert into Tomtenisse(Namn, IdNr, Nötter, Russin) values(?, ?, ?, ?)");
-        $CreateTomtenissar->bindParam(1, $_POST["Cname"], PDO::PARAM_STR);
-        $CreateTomtenissar->bindParam(2, $_POST["CId"], PDO::PARAM_STR);
-        $CreateTomtenissar->bindParam(3, $_POST["Nuts"], PDO::PARAM_INT);               // John
-        $CreateTomtenissar->bindParam(4, $_POST["Raisin"], PDO::PARAM_INT);             //120617-0921-3-666973821
-        $CreateTomtenissar->execute();
 
-        if (($CreateTomtenissar->rowCount()) > 0){
+    echo "<br>";
+    
+    if (empty($_POST["Chefname"]) || empty($_POST["ChefId"]) || empty($_POST["Shoesize"])) {
+        echo("Can't update when empty");
+    } 
+    else {  
+
+        if ($_POST["Shoesize"] == "none"){
+            $EditChef = $pdo->prepare("update Tomtenisse set Skostorlek = NULL where Namn = ? and IdNr = ? ");
+            $EditChef->bindParam(1, $_POST["Chefname"], PDO::PARAM_STR);
+            $EditChef->bindParam(2, $_POST["ChefId"], PDO::PARAM_STR);
+        }
+        else{
+            $EditChef = $pdo->prepare("update Tomtenisse set Skostorlek = ? where Namn = ? and IdNr = ? ");
+            $EditChef->bindParam(1, $_POST["Shoesize"], PDO::PARAM_STR);   
+            $EditChef->bindParam(2, $_POST["Chefname"], PDO::PARAM_STR);
+            $EditChef->bindParam(3, $_POST["ChefId"], PDO::PARAM_STR);
+        }
+        
+        $EditChef->execute();
+
+        if (($EditChef->rowCount()) > 0){
             echo "<br>";
-            echo("Insert successful");
+            echo("Update successful");
         }
         else{
             echo "<br>";
-            echo("Insert failed");
+            echo("Update failed");
             echo "<br>";
-            echo $CreateTomtenissar->errorCode();
+            echo $EditChef->errorCode();
             echo "<br>";
-            print_r($CreateTomtenissar->errorInfo());
+            print_r($EditChef->errorInfo());
         }
     }
-    */
+    
     ?>
     
 </body>
