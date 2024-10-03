@@ -60,6 +60,7 @@
             echo("<pre>");
             print_r($row);
             echo("</pre>");
+            echo "<a href='https://wwwlab.webug.se/databaskonstruktion/a23erigu/TomteVerkstad.php'> Delete " . $row["Namn"] . " </a>";
         }
     }
     else{
