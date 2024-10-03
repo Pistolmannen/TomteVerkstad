@@ -11,16 +11,16 @@
     $pdo = new PDO("mysql:dbname=TomteVerkstad;host=localhost", "dbkonstruktion", "Skata#23"); // koden för att ansluta till databasen som root
 
     /*------------------------------------*\
-    |   koden för att tabort tomtenissar   | 
+    |   Koden för att tabort tomtenissar   | 
     \*------------------------------------*/
 
     if (!empty($_GET["Name"]) || !empty($_GET["Id"])) {
-        $CreateTomtenissar = $pdo->prepare("delete from Tomtenisse where namn = ? and IdNr = ?");
-        $CreateTomtenissar->bindParam(1, $_GET["Name"], PDO::PARAM_STR);
-        $CreateTomtenissar->bindParam(2, $_GET["Id"], PDO::PARAM_STR);
-        $CreateTomtenissar->execute();
+        $DeleteTomtenissar = $pdo->prepare("delete from Tomtenisse where namn = ? and IdNr = ?");
+        $DeleteTomtenissar->bindParam(1, $_GET["Name"], PDO::PARAM_STR);
+        $DeleteTomtenissar->bindParam(2, $_GET["Id"], PDO::PARAM_STR);
+        $DeleteTomtenissar->execute();
 
-        if (($CreateTomtenissar->rowCount()) > 0){
+        if (($DeleteTomtenissar->rowCount()) > 0){
             echo "<br>";
             echo("Delete successful");
         }
@@ -28,18 +28,17 @@
             echo "<br>";
             echo("Delete failed");
             echo "<br>";
-            echo $CreateTomtenissar->errorCode();
+            echo $DeleteTomtenissar->errorCode();
             echo "<br>";
-            print_r($CreateTomtenissar->errorInfo());
+            print_r($DeleteTomtenissar->errorInfo());
         }
     } 
 
 
     /*-----------------------------*\
-    |   koden för drop down menyn   | 
+    |   Koden för drop down menyn   | 
     \*-----------------------------*/
     $Dropdownissar = $pdo->prepare("CALL getNissar");
-    //$Dropdownissar = $pdo->prepare("select * from Tomtenisse");
     $Dropdownissar->execute();
     $FetchDropdownissar = $Dropdownissar->fetchAll(PDO::FETCH_ASSOC);
     $Dropdownissar->closeCursor();
@@ -55,7 +54,7 @@
     echo "<br>";
 
     /*-------------------------------------*\
-    |   koden för att söka på tomtenissar   | 
+    |   Koden för att söka på tomtenissar   | 
     \*-------------------------------------*/
 
     if (empty($_POST["name"])) {
@@ -69,7 +68,7 @@
 
     <form action = "TomteVerkstad.php" method = "POST">
         <p> Search for Tomtenissar </p>
-        <input type="text" name="name" value= <?php echo $name ?>>
+        <input type="text" name="Name" value= <?php echo $name ?>>
         <input type="submit" name="submit" value="Submit"> 
     </form>
 
@@ -97,14 +96,14 @@
     echo "<br>";
 
     /*-----------------------------------*\
-    |   koden för att skapa tomtenissar   | 
+    |   Koden för att skapa tomtenissar   | 
     \*-----------------------------------*/
     ?>
 
     <form action = "TomteVerkstad.php" method = "POST">
         <p> Create tomtenisse </p>
         Name of tomtenisse 
-        <input type="text" name="name" value=""> <br>
+        <input type="text" name="Name" value=""> <br>
         ID of tomtenisse 
         <input type="text" name="CId" value=""> <br>
         Amount of nuts earned 
@@ -118,16 +117,16 @@
 
     echo "<br>";
 
-    if (empty($_POST["name"]) || empty($_POST["CId"]) || empty($_POST["Nuts"]) || empty($_POST["Raisin"])) {
+    if (empty($_POST["Name"]) || empty($_POST["CId"]) || empty($_POST["Nuts"]) || empty($_POST["Raisin"])) {
         echo("Can't insert when empty");
     } 
     else {
         
         $CreateTomtenissar = $pdo->prepare("insert into Tomtenisse(Namn, IdNr, Nötter, Russin) values(?, ?, ?, ?)");
-        $CreateTomtenissar->bindParam(1, $_POST["name"], PDO::PARAM_STR);
+        $CreateTomtenissar->bindParam(1, $_POST["Name"], PDO::PARAM_STR);
         $CreateTomtenissar->bindParam(2, $_POST["CId"], PDO::PARAM_STR);
         $CreateTomtenissar->bindParam(3, $_POST["Nuts"], PDO::PARAM_INT);               // John
-        $CreateTomtenissar->bindParam(4, $_POST["Raisin"], PDO::PARAM_INT);             //120617-0921-3-666973821
+        $CreateTomtenissar->bindParam(4, $_POST["Raisin"], PDO::PARAM_INT);             // 120617-0921-3-666973821
         $CreateTomtenissar->execute();
 
         if (($CreateTomtenissar->rowCount()) > 0){
@@ -148,14 +147,14 @@
     echo "<br>";
 
     /*----------------------------------------------*\
-    |   koden för att göra tomtenissar till chefer   | 
+    |   Koden för att göra tomtenissar till chefer   | 
     \*----------------------------------------------*/
     ?>
 
     <form action = "TomteVerkstad.php" method = "POST">
         <p> Make chefnisse </p>
         Name of tomtenisse 
-        <input type="text" name="name" value=""> <br>
+        <input type="text" name="Name" value=""> <br>
         ID of tomtenisse 
         <input type="text" name="ChefId" value=""> <br>
         Shoe size <br>
@@ -178,20 +177,20 @@
 
     echo "<br>";
     
-    if (empty($_POST["name"]) || empty($_POST["ChefId"]) || empty($_POST["Shoesize"])) {
+    if (empty($_POST["Name"]) || empty($_POST["ChefId"]) || empty($_POST["Shoesize"])) {
         echo("Can't update when empty");
     } 
     else {  
 
         if ($_POST["Shoesize"] == "none"){
             $EditChef = $pdo->prepare("update Tomtenisse set Skostorlek = NULL where Namn = ? and IdNr = ? ");
-            $EditChef->bindParam(1, $_POST["name"], PDO::PARAM_STR);
+            $EditChef->bindParam(1, $_POST["Name"], PDO::PARAM_STR);
             $EditChef->bindParam(2, $_POST["ChefId"], PDO::PARAM_STR);
         }
         else{
             $EditChef = $pdo->prepare("update Tomtenisse set Skostorlek = ? where Namn = ? and IdNr = ? ");
             $EditChef->bindParam(1, $_POST["Shoesize"], PDO::PARAM_STR);   
-            $EditChef->bindParam(2, $_POST["name"], PDO::PARAM_STR);
+            $EditChef->bindParam(2, $_POST["Name"], PDO::PARAM_STR);
             $EditChef->bindParam(3, $_POST["ChefId"], PDO::PARAM_STR);
         }
         
@@ -208,6 +207,57 @@
             echo $EditChef->errorCode();
             echo "<br>";
             print_r($EditChef->errorInfo());
+        }
+    }
+
+    /*-----------------------------------------------*\
+    |   Koden för att hita lesaker beroende på pris   | 
+    \*-----------------------------------------------*/
+    
+    ?>
+
+    <form action = "TomteVerkstad.php" method = "POST">
+        <p> Get toys by prise </p>
+        Price of toy
+        <input type="number" name="Prise" value=""> <br>
+        <input type="submit" name="submit" value="Submit"> 
+    </form>
+
+    <?php
+
+    echo "<br>";
+    
+    if (empty($_POST["Prise"]) ) {
+        echo("Can't select when empty");
+    } 
+    else {  
+
+        $ToyByPrise = $pdo->prepare("Call getLeksakerPåPris(?)");
+        $ToyByPrise->bindParam(1, $_POST["Prise"], PDO::PARAM_INT);
+        $ToyByPrise->execute();
+        $FetchToyByPrise = $ToyByPrise->fetchAll(PDO::FETCH_ASSOC);
+        $ToyByPrise->closeCursor();
+
+
+        if (count($FetchToyByPrise) > 0){
+            foreach($FetchToyByPrise as $row) {
+
+                $ToyName = $pdo->prepare("Call getNamnPåLeksak(?)");
+                $ToyName->bindParam(1, $row["IdNr"], PDO::PARAM_STR);
+                $ToyName->execute();
+                $FetchToyName = $ToyName->fetchAll(PDO::FETCH_ASSOC);
+                $ToyName->closeCursor();
+
+                foreach($FetchToyName as $row2){
+                    echo("<pre>");
+                    print_r($row2);
+                    echo("</pre>");
+                }
+            }
+        }
+        else{
+            echo "<br>";
+            echo("No toys found");
         }
     }
     

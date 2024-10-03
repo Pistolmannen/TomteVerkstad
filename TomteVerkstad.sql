@@ -314,6 +314,19 @@ delimiter ;
 
 call getNissar();
 
+/*    en procedur som hämtar namnet av en leksak     */
+delimiter //
+
+create procedure getNamnPåLeksak(in LeksakID int)
+begin
+	select LeksakNamn.Namn, Leksak.IdNr, Leksak.Vikt, Leksak.Pris from Leksak, LeksakNamn where Leksak.IdNr = LeksakID and Leksak.NamnKod = LeksakNamn.NamnKod;
+
+end//
+
+delimiter ;
+
+call getNamnPåLeksak(45104);
+
 /*    proceduren använder en IN parameter för att hämta leksaker beroende på pris    */
 delimiter //
 
