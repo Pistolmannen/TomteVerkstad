@@ -1,3 +1,6 @@
+<?php
+    session_start()
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,8 +10,18 @@
     <title>This is Tomtens Verkstad</title>
 </head>
 <body>
+    <form action = "Inlogg.php">
+        <input type="submit" name="submit" value="Login"> 
+    </form>
+
     <?php
-    $pdo = new PDO("mysql:dbname=TomteVerkstad;host=localhost", "dbkonstruktion", "Skata#23"); // koden för att ansluta till databasen som root
+    try{
+        $pdo = new PDO("mysql:dbname=TomteVerkstad;host=localhost", $_SESSION["Username"], $_SESSION["Password"]); // koden för att ansluta till databasen
+        echo "<p>Loged in as " . $_SESSION['Username'] .  "</p>";
+    }
+    catch (PDOException $e) {
+        exit("Login failed: " . $e->getMessage());
+    }
 
     /*------------------------------------*\
     |   Koden för att tabort tomtenissar   | 
@@ -57,11 +70,11 @@
     |   Koden för att söka på tomtenissar   | 
     \*-------------------------------------*/
 
-    if (empty($_POST["name"])) {
+    if (empty($_POST["Name"])) {
         $name = "Name";
     } 
     else {
-        $name = $_POST["name"];
+        $name = $_POST["Name"];
     }
 
     ?>
@@ -75,22 +88,26 @@
     <?php
     echo "<br>";
 
-    $Tomtenissar = $pdo->prepare("select * from Tomtenisse where Namn = ?");
-    $Tomtenissar->bindParam(1, $name, PDO::PARAM_STR);
-    $Tomtenissar->execute();
-
-    if (($Tomtenissar->rowCount()) > 0){
-        foreach($Tomtenissar as $row) {
-            echo("<pre>");
-            print_r($row);
-            echo("</pre>");
-            echo "<a href='https://wwwlab.webug.se/databaskonstruktion/a23erigu/TomteVerkstad.php?Name=" . $row["Namn"] . "&Id=" . $row["IdNr"] . "'> Delete " . $row["Namn"] . " </a>";
+    if(isset($_POST["Name"])){
+        $Tomtenissar = $pdo->prepare("select * from Tomtenisse where Namn = ?");
+        $Tomtenissar->bindParam(1, $name, PDO::PARAM_STR);
+        $Tomtenissar->execute();
+    
+        if (($Tomtenissar->rowCount()) > 0){
+            foreach($Tomtenissar as $row) {
+                echo("<pre>");
+                print_r($row);
+                echo("</pre>");
+                echo "<a href='https://wwwlab.webug.se/databaskonstruktion/a23erigu/TomteVerkstad.php?Name=" . $row["Namn"] . "&Id=" . $row["IdNr"] . "'> Delete " . $row["Namn"] . " </a>";
+            }
+        }
+        else{
+            echo "<br>";
+            echo("No info found");
         }
     }
-    else{
-        echo "<br>";
-        echo("No info found");
-    }
+
+
 
     echo "<br>";
     echo "<br>";
@@ -117,11 +134,7 @@
 
     echo "<br>";
 
-    if (empty($_POST["Name"]) || empty($_POST["CId"]) || empty($_POST["Nuts"]) || empty($_POST["Raisin"])) {
-        echo("Can't insert when empty");
-    } 
-    else {
-        
+    if (isset($_POST["Name"]) && isset($_POST["CId"]) && isset($_POST["Nuts"]) && isset($_POST["Raisin"])) {
         $CreateTomtenissar = $pdo->prepare("insert into Tomtenisse(Namn, IdNr, Nötter, Russin) values(?, ?, ?, ?)");
         $CreateTomtenissar->bindParam(1, $_POST["Name"], PDO::PARAM_STR);
         $CreateTomtenissar->bindParam(2, $_POST["CId"], PDO::PARAM_STR);
@@ -141,7 +154,7 @@
             echo "<br>";
             print_r($CreateTomtenissar->errorInfo());
         }
-    }
+    } 
 
     echo "<br>";
     echo "<br>";
@@ -177,11 +190,7 @@
 
     echo "<br>";
     
-    if (empty($_POST["Name"]) || empty($_POST["ChefId"]) || empty($_POST["Shoesize"])) {
-        echo("Can't update when empty");
-    } 
-    else {  
-
+    if (isset($_POST["Name"]) && isset($_POST["ChefId"]) && isset($_POST["Shoesize"])) {
         if ($_POST["Shoesize"] == "none"){
             $EditChef = $pdo->prepare("update Tomtenisse set Skostorlek = NULL where Namn = ? and IdNr = ? ");
             $EditChef->bindParam(1, $_POST["Name"], PDO::PARAM_STR);
@@ -208,7 +217,10 @@
             echo "<br>";
             print_r($EditChef->errorInfo());
         }
-    }
+    } 
+
+    echo "<br>";
+    echo "<br>";
 
     /*-----------------------------------------------*\
     |   Koden för att hita lesaker beroende på pris   | 
@@ -227,11 +239,7 @@
 
     echo "<br>";
     
-    if (empty($_POST["Prise"]) ) {
-        echo("Can't select when empty");
-    } 
-    else {  
-
+    if (isset($_POST["Prise"]) ) {
         $ToyByPrise = $pdo->prepare("Call getLeksakerPåPris(?)");
         $ToyByPrise->bindParam(1, $_POST["Prise"], PDO::PARAM_INT);
         $ToyByPrise->execute();
@@ -259,7 +267,7 @@
             echo "<br>";
             echo("No toys found");
         }
-    }
+    } 
     
     ?>
     

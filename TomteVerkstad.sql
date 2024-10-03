@@ -394,8 +394,9 @@ grant select on TomteVerkstad.Behöver to "a23eriguByggarNisse"@"%";
 grant select on TomteVerkstad.KräverMagi to "a23eriguByggarNisse"@"%";
 grant select on TomteVerkstad.Leksak to "a23eriguByggarNisse"@"%";
 grant select on TomteVerkstad.LeksakNamn to "a23eriguByggarNisse"@"%";
-grant select on TomteVerkstad.LeksakNamnLog to "a23eriguByggarNisse"@"%";
+grant select on TomteVerkstad.LeksakNamnLog to "a23eriguByggarNisse"@"%"; 
 grant execute on procedure TomteVerkstad.getLeksakerPåPris to "a23eriguByggarNisse"@"%"; 
+grant execute on procedure TomteVerkstad.getNamnPåLeksak to "a23eriguByggarNisse"@"%"; 
 grant execute on procedure TomteVerkstad.getNissar to "a23eriguByggarNisse"@"%"; */
 
 /*
