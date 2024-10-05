@@ -9,6 +9,12 @@
     <title>Login</title>
 </head>
 <body>
+
+    <?php
+    /*--------------------------*\
+    |   Koden för inloggningen   | 
+    \*--------------------------*/
+    ?>
     <form action = "Inlogg.php" method = "POST">
         <p> Login </p>
         Name 
@@ -22,11 +28,12 @@
     <?php
     
     if(!empty($_POST["Username"]) && !empty($_POST["Password"])){
-        $_SESSION["Username"] = $_POST["Username"];         // dbkonstruktion
-        $_SESSION["Password"] = $_POST["Password"];         // Skata#23
+        $_SESSION["Username"] = $_POST["Username"];         
+        $_SESSION["Password"] = $_POST["Password"];         
         try {
             $pdo = new PDO("mysql:dbname=TomteVerkstad;host=localhost", $_POST["Username"], $_POST["Password"]); // koden för att ansluta till databasen
             echo "Login successfull";
+            echo "<br>";
         }
         catch (PDOException $e) {
             exit("Login failed: " . $e->getMessage());
@@ -34,6 +41,29 @@
     }
 
     echo "<br>";
+    /*--------------------------*\
+    |   Koden för utloggningen   | 
+    \*--------------------------*/
+    ?>
+
+    <form action = "Inlogg.php" method = "POST">
+        <input type="hidden" name="Logout" value="True">
+        <input type="submit" name="submit" value="Logout"> 
+    </form>
+
+    <?php
+    
+    if(!empty($_POST["Logout"])){
+        $_SESSION["Username"] = ""; 
+        $_SESSION["Password"] = "";
+        echo "Logout successfull";
+        echo "<br>";
+    }
+
+    echo "<br>";
+    /*----------------------------*\
+    |   Koden för att flyta sida   | 
+    \*----------------------------*/
     ?>
 
     <form action = "TomteVerkstad.php">

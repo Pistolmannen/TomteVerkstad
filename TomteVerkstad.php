@@ -15,8 +15,11 @@
     </form>
 
     <?php
+    /*----------------------------------------*\
+    |   koden för att ansluta till databasen   | 
+    \*----------------------------------------*/
     try{
-        $pdo = new PDO("mysql:dbname=TomteVerkstad;host=localhost", $_SESSION["Username"], $_SESSION["Password"]); // koden för att ansluta till databasen
+        $pdo = new PDO("mysql:dbname=TomteVerkstad;host=localhost", $_SESSION["Username"], $_SESSION["Password"]); 
         echo "<p>Loged in as " . $_SESSION['Username'] .  "</p>";
     }
     catch (PDOException $e) {
@@ -69,7 +72,6 @@
     /*-------------------------------------*\
     |   Koden för att söka på tomtenissar   | 
     \*-------------------------------------*/
-
     if (empty($_POST["Name"])) {
         $name = "Name";
     } 
@@ -138,8 +140,8 @@
         $CreateTomtenissar = $pdo->prepare("insert into Tomtenisse(Namn, IdNr, Nötter, Russin) values(?, ?, ?, ?)");
         $CreateTomtenissar->bindParam(1, $_POST["Name"], PDO::PARAM_STR);
         $CreateTomtenissar->bindParam(2, $_POST["CId"], PDO::PARAM_STR);
-        $CreateTomtenissar->bindParam(3, $_POST["Nuts"], PDO::PARAM_INT);               // John
-        $CreateTomtenissar->bindParam(4, $_POST["Raisin"], PDO::PARAM_INT);             // 120617-0921-3-666973821
+        $CreateTomtenissar->bindParam(3, $_POST["Nuts"], PDO::PARAM_INT);               
+        $CreateTomtenissar->bindParam(4, $_POST["Raisin"], PDO::PARAM_INT);             
         $CreateTomtenissar->execute();
 
         if (($CreateTomtenissar->rowCount()) > 0){
