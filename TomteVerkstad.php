@@ -10,7 +10,7 @@
     <title>This is Tomtens Verkstad</title>
 </head>
 <body>
-    <form action = "Inlogg.php">
+    <form action = "Inlogg.php" method = "POST">
         <input type="submit" name="submit" value="Login"> 
     </form>
 
