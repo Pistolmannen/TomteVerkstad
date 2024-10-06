@@ -10,7 +10,7 @@
     <title>This is Tomtens Verkstad</title>
 </head>
 <body>
-    <form action = "Inlogg.php">
+    <form action = "Inlogg.php" method = "POST">
         <input type="submit" name="submit" value="Login"> 
     </form>
 
@@ -18,8 +18,20 @@
     /*----------------------------------------*\
     |   koden för att ansluta till databasen   | 
     \*----------------------------------------*/
+    if (empty($_SESSION["Username"])) {
+        $Username = "";
+    } 
+    else {
+        $Username = $_SESSION["Username"];
+    }
+    if (empty($_SESSION["Password"])) {
+        $Password = "";
+    } 
+    else {
+        $Password = $_SESSION["Password"];
+    }
     try{
-        $pdo = new PDO("mysql:dbname=TomteVerkstad;host=localhost", $_SESSION["Username"], $_SESSION["Password"]); 
+        $pdo = new PDO("mysql:dbname=TomteVerkstad;host=localhost", $Username, $Password); 
         echo "<p>Loged in as " . $_SESSION['Username'] .  "</p>";
     }
     catch (PDOException $e) {
