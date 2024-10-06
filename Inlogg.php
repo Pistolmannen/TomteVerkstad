@@ -27,11 +27,11 @@
 
     <?php
     
-    if(!empty($_POST["Username"]) && !empty($_POST["Password"])){
-        $_SESSION["Username"] = $_POST["Username"];         
-        $_SESSION["Password"] = $_POST["Password"];         
+    if(!empty($_POST["Username"]) && !empty($_POST["Password"])){    
         try {
             $pdo = new PDO("mysql:dbname=TomteVerkstad;host=localhost", $_POST["Username"], $_POST["Password"]); // koden för att ansluta till databasen
+            $_SESSION["Username"] = $_POST["Username"];         
+            $_SESSION["Password"] = $_POST["Password"];     
             echo "Login successfull";
             echo "<br>";
         }
