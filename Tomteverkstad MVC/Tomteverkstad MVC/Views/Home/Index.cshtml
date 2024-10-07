@@ -1,0 +1,18 @@
+﻿@{
+    ViewData["Title"] = "Tomteverkstad inlogg";
+}
+
+@using (Html.BeginForm("Search", "YOUR CONTROLLER", FormMethod.Post))
+{
+    <p>
+    <p> Login </p>
+        Name
+    <input type="text" name="Username" value="">
+    <br>
+        Password
+    <input type="password" name="Password" value="">
+    <br>
+    <br>
+    <input type="submit" name="submit" value="Login">
+    </p>
+}
