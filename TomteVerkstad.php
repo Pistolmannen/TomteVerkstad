@@ -108,12 +108,40 @@
         $Tomtenissar->execute();
     
         if (($Tomtenissar->rowCount()) > 0){
+            echo("<table>");
+                echo("<tr>");
+                    echo("<th> Name </th>");
+                    echo("<th> ID </th>");
+                    echo("<th> Nuts </th>");
+                    echo("<th> Raisin </th>");
+                    echo("<th> Shoe size </th>");
+                    echo("<th> Delete </th>");
+                echo("</tr>");
+
             foreach($Tomtenissar as $row) {
-                echo("<pre>");
-                print_r($row);
-                echo("</pre>");
-                echo "<a href='https://wwwlab.webug.se/databaskonstruktion/a23erigu/TomteVerkstad.php?Name=" . $row["Namn"] . "&Id=" . $row["IdNr"] . "'> Delete " . $row["Namn"] . " </a>";
+                echo("<tr>");
+                    echo("<td>");
+                        print_r($row[0]);
+                    echo("</td>");
+                    echo("<td>");
+                        print_r($row[1]);
+                    echo("</td>");
+                    echo("<td>");
+                        print_r($row[2]);
+                    echo("</td>");
+                    echo("<td>");
+                        print_r($row[3]);
+                    echo("</td>");
+                    echo("<td>");
+                        print_r($row[4]);
+                    echo("</td>");
+                    echo("<td>");
+                        echo "<a href='https://wwwlab.webug.se/databaskonstruktion/a23erigu/TomteVerkstad.php?Name=" . $row["Namn"] . "&Id=" . $row["IdNr"] . "'> Delete " . $row["Namn"] . " </a>";
+                    echo("</td>");
+                echo("</tr>");
+                
             }
+            echo("</table>");
         }
         else{
             echo "<br>";
@@ -262,6 +290,14 @@
 
 
         if (count($FetchToyByPrise) > 0){
+
+            echo("<table>");
+                echo("<tr>");
+                    echo("<th> Name </th>");
+                    echo("<th> ID </th>");
+                    echo("<th> Weight </th>");
+                    echo("<th> Prise </th>");
+                echo("</tr>");
             foreach($FetchToyByPrise as $row) {
 
                 $ToyName = $pdo->prepare("Call getNamnPåLeksak(?)");
@@ -271,11 +307,24 @@
                 $ToyName->closeCursor();
 
                 foreach($FetchToyName as $row2){
-                    echo("<pre>");
-                    print_r($row2);
-                    echo("</pre>");
+                    echo("<tr>");
+                        echo("<td>");
+                            print_r($row2["Namn"]);
+                        echo("</td>");
+                        echo("<td>");
+                            print_r($row2["IdNr"]);
+                        echo("</td>");
+                        echo("<td>");
+                            print_r($row2["Vikt"]);
+                        echo("</td>");
+                        echo("<td>");
+                            print_r($row2["Pris"]);
+                        echo("</td>");
+                    echo("</tr>");    
                 }
+                
             }
+            echo("</table>");
         }
         else{
             echo "<br>";
